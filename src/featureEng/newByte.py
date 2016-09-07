@@ -11,8 +11,7 @@ from nltk.util import ngrams
 import itertools
 from collections import Counter
 
-class preprocessor(object):
-	
+class preprocessor(object):	
 	'''
 	preprocess byte data for microsoft malware detection project
 
@@ -72,7 +71,15 @@ class preprocessor(object):
 
 if __name__ == '__main__':
 
-	sc = SparkContext()
+	#initialize spark session
+	spark = SparkSession\
+        .builder\
+        .appName("Test")\
+        .config()\
+        .getOrCreate()
+	
+	sc = spark.sparkContext
+
 	binaryPath = "s3://eds-uga-csci8360/data/project2/binaries/"
 	byteFiles = sc.wholeTextFiles(binaryPath) 
 
