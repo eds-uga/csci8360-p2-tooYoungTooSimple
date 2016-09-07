@@ -38,7 +38,7 @@ class preprocessor(object):
     	splits = stringOfName.split(".")
     	name = splits[0][-20:]
 
-    return name
+	    return name
 
 	# token a document, only keep 2-digit code, and its grams
 	def tokenEachDoc(aDoc):
