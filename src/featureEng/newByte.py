@@ -54,7 +54,7 @@ class preprocessor(object):
 		sumGramDict = dict(Counter(sumGramList))
 		
 		for keys in sumGramDict.keys():
-			if sumGramDict[keys] < freqThreshold:
+			if sumGramDict[keys] < self.freqThreshold:
 				del sumGramDict[keys]
 
 		return sumGramDict
