@@ -5,12 +5,12 @@ Created on Sun Sep 18 21:04:54 2016
 @author: Yaotong Cai
 """
 
-# The following python code is for extracting features: 1) proportion of lines or characters in each 'section'; 2) Number of 
+# The following python code is for extracting features: 1) proportion of lines in each 'section'; 2) Number of 
 # occurences of specific dll's; 3) proportion of certain interpunction characters in
 # each 'section'
 
 # NOTE: To run, get trainLabels.csv and Sample.csv ready in the execution directory, 
-#       with subdirectories train and test containing asm files.
+#       with subdirectories train and test containing bytes and asm files.
 
 # Reference to pick the features: 2nd Place solution documentation by Marios
 # Michailidis and Gert Jacobusse 
@@ -19,7 +19,6 @@ Created on Sun Sep 18 21:04:54 2016
 
 import os
 import csv
-import zipfile
 from io import BytesIO
 from collections import defaultdict
 import re
@@ -27,17 +26,17 @@ import numpy as np
 
 # list ids and labels
 
-ids=[]
+trainids=[]
 labels=[]
-with open('trainLabels.csv','r') as f:
+with open('/home/colin/Documents/CSCI8360/Project2/mycode/trainLabels.csv','r') as f:
     r=csv.reader(f)
     r.next() # skip header
     for row in r:
-        ids.append(row[0])
+        trainids.append(row[0])
         labels.append(float(row[1]))
 
 testids=[]
-with open('Sample.csv','r') as f:
+with open('/home/colin/Documents/CSCI8360/Project2/mycode/Sample.csv','r') as f:
     r=csv.reader(f)
     r.next()
     for row in r:
@@ -70,45 +69,23 @@ def writedata(data,fname,header=None):
 # extract file properties
 
 """
-function compressedsize
-input: path to file
-output: compressed size of file
-* read file and compress it in memory
-"""
-def compressedsize(fpath):
-    OutputFile = BytesIO()
-    zf = zipfile.ZipFile(OutputFile, 'w') # reading ZIP files
-    zf.write(fpath, compress_type=zipfile.ZIP_DEFLATED)
-    s = float(zf.infolist()[0].compress_size) # obtain compressed size of each file
-    zf.close()
-    return s
-
-"""
 function fileprops
 input: ids of train or test, string "train" or "test"
 output: writes train_props or test_props
-* extract file properties (size, compressed size, ratios) from all files
+* extract file properties (sizes of asm and bytes files, ratios) from all files
 """
 def fileprops(ids,trainortest):
     with open('%s_fileprops.csv'%trainortest,'w') as f:
         w=csv.writer(f)
-        w.writerow(['asmSize','bytesSize',
-                    'asmCompressionRate','bytesCompressionRate',
-                    'ab_ratio','abc_ratio','ab2abc_ratio']) # save three ratios
+        w.writerow(['asmSize','bytesSize','ab_ratio']) # save three ratios
                     # in csv file
         for i in ids:
             asmsiz=float(os.path.getsize('%s/'%trainortest+i+'.asm')) # obtain 
             # size of asm file
             bytsiz=float(os.path.getsize('%s/'%trainortest+i+'.bytes'))# obtain
             # size of bytes file
-            asmcr=compressedsize('%s/'%trainortest+i+'.asm')/asmsiz
-            # asm file compression rate
-            bytcr=compressedsize('%s/'%trainortest+i+'.bytes')/bytsiz
-            # bytes file compression rate
             ab=asmsiz/bytsiz # asm file size divided by bytes file size
-            abc=asmcr/bytcr # asm compression rate divided by bytes compression
-            # rate
-            w.writerow([asmsiz,bytsiz,asmcr,bytcr,ab,abc,ab/abc])
+            w.writerow([asmsiz,bytsiz,ab])
             # the last is ab_ratio divided by abc_ratio
             f.flush()
 
@@ -171,7 +148,8 @@ def gdlls(asmlines):
 function asmcontents
 input: ids of train or test, string "train" or "test"
 output: train_asmcontents or test_asmcontents + dlls on sections
-* extract features from contents of asm from all files in train or test set
+* extract proportion of lines including specific characters (selsections/seldlls)
+* within each section from contents of asm from all files in train or test set
 
 """
 
@@ -182,9 +160,11 @@ def asmcontents(ids,trainortest):
             ['sp_%s'%key for key in selsections]
             +['dl_%s'%key for key in seldlls]
             )
-        fsec=open('secmetadata%s.txt'%trainortest,'w')
+        fsec=open('%s.txt'%trainortest,'w') # to save freqs of different 
+        # selections in each file
         wsec=csv.writer(fsec)
-        fdll=open('dllmetadata%s.txt'%trainortest,'w')
+        fdll=open('%s.txt'%trainortest,'w') # to save freqs of different 
+        # .dll in each file
         wdll=csv.writer(fdll)
         for i in ids:
             with open('%s/'%trainortest+i+'.asm','r') as fasm:
@@ -226,18 +206,18 @@ output: write reduced asm contents
 * read features on asm contents, reduce them by calling reducefeats
 """
 def reducecontents():
-    train_asmcontents,asmcontentshead=readdata('train_asmcontents.csv')
-    test_asmcontents=readdata('test_asmcontents.csv')
+    train_asmcontents,asmcontentshead=readdata('/home/colin/Documents/CSCI8360/Project2/mycode/train_asmcontents.csv')
+    test_asmcontents=readdata('/home/colin/Documents/CSCI8360/Project2/mycode/test_asmcontents.csv')
     train_asmcontents_red,test_asmcontents_red,asmcontentshead_red=reducefeats(
     train_asmcontents,test_asmcontents,asmcontentshead)
-    writedata(train_asmcontents_red,'train_asmcontents_red.csv',asmcontentshead_red)
-    writedata(test_asmcontents_red,'test_asmcontents_red.csv',asmcontentshead_red)
+    writedata(train_asmcontents_red,'/home/colin/Documents/CSCI8360/Project2/mycode/train_asmcontents_red.csv',asmcontentshead_red)
+    writedata(test_asmcontents_red,'/home/colin/Documents/CSCI8360/Project2/mycode/test_asmcontents_red.csv',asmcontentshead_red)
 
 
 # execute
 if __name__ == '__main__':
-    fileprops(ids,'train')
-    fileprops(testids,'test')
-    asmcontents(ids,'train')
-    asmcontents(testids,'test')
+    fileprops(trainids,'/home/colin/Documents/CSCI8360/Project2/mycode/train')
+    fileprops(testids,'/home/colin/Documents/CSCI8360/Project2/mycode/test')
+    asmcontents(trainids,'/home/colin/Documents/CSCI8360/Project2/mycode/train')
+    asmcontents(testids,'/home/colin/Documents/CSCI8360/Project2/mycode/test')
     reducecontents()
