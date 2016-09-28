@@ -7,7 +7,8 @@ This is project 2 in CSCI 8360 course at University of Georgia, Spring 2016. In 
 Here are the instructions to run the python scripts with Spark on Amazon AWS EMR, be sure to change the data path, such as Hadoop path in your master node.
 
 ### The data
-There are in total 9 class labels for each of the documents, which are Ramnit, Lollipop, Kelihos_ver3, Vundo, Simda, Tracur, Kelihos_ver1, Obfuscator.ACY and Gatak. Each of the files is recognized by a unique 20 serial number (hash), and consists of two types of files: asm file and binary file. The binary file contains lines of hexadecimal pairs; the asm file contains specific structures, names of extensions, characters as well as other information.Lists of documents in the train set and test set as well as labels of training documents are provided in the following files:
+There are in total 9 class labels for each of the documents, which are Ramnit, Lollipop, Kelihos_ver3, Vundo, Simda, Tracur, Kelihos_ver1, Obfuscator.ACY and Gatak. Each of the files is recognized by a unique 20 serial number (hash), and consists of two types of files: asm file and binary file. The binary file contains lines of hexadecimal pairs; the asm file contains specific structures, names of extensions, characters as well as other information.
+Lists of documents in the train set and test set as well as labels of training documents are provided in the following files:
 
 ```
 X_train_small.txt, y_train_small.txt
@@ -36,7 +37,7 @@ We consider and extract the following features from the train and test data:
 
 ###Model Training
 * The ngrams and asm pixel intensities are calculated with Spark on AWS EMR.
-* The best model is Random Forest with max_depth = 20, num_trees = 1000, max_bin = 30. Another version of random forest with more number of trees and deeper depth was killed by AWS for some reason, which should have better performance than our current model. 
+* The best model is Random Forest with max_depth = 20, num_trees = 1000, max_bin = 100. Another version of random forest with more number of trees and deeper depth was killed by AWS for some reason, which should have better performance than our current model. 
 * For the idea of pixel intensity, please see **[L. Nataraj 2014](http://sarvamblog.blogspot.com/)**,for details.
 
 ###Prediction
